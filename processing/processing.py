@@ -23,7 +23,7 @@ with open("processing/input/url.csv", newline="", encoding="utf-8-sig") as csvfi
     next(rd)
     for row in rd:
         bn = row[0]
-        if bn in ident and ident[bn]["City"] == "TORONTO":
+        if bn in ident and ident[bn]["City"].toUpperCase() == "TORONTO":
             entries.append(ident[bn])
             entries[-1]["url"] = row[-1]
 
@@ -33,7 +33,8 @@ results = []
 nomi = Nominatim("ca")
 
 for i in range(len(entries)):
-    print(f"Start {i}")
+    if i % 1000 == 0:
+        print(f"Start {i}")
     entry = entries[i]
     data = nomi.query_postal_code(f"{entry["Postal Code"][:3]} {entry["Postal Code"][3:]}")
     entry["lon"] = data.longitude
