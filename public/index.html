@@ -116,7 +116,7 @@
                     pool.push(entry)
                 }
             }
-            if (pool.length > 200) {
+            if (pool.length > max) {
                 for (let i = pool.length - 1; i > 0; i--) {
                     let j = Math.floor(Math.random() * (i + 1))
                     const t = pool[j]
