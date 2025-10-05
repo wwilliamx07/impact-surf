@@ -12,6 +12,8 @@ app.use(express.json())
 const key = readFileSync("secret.json").toString()
 const gemini = new GoogleGenAI({ apiKey: key })
 
+app.use(express.static("public"))
+
 app.get("/relay", async (req, res) => {
     try {
         if (req.headers["url"] && req.headers["name"] && req.headers["address"]) {
