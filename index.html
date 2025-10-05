@@ -17,6 +17,11 @@
                 <input type="range" id="radiusSlider" min="500" max="5000" step="50" value="1000"/>
                 <h3 class="lbl" id="radius">1 km</h2>
             </div>
+            <div class="stack">
+                <h3 class="lbl">Max Count</h2>
+                <input type="range" id="maxCount" min="1" max="200" step="1" value="50"/>
+                <h3 class="lbl" id="max">50 results</h2>
+            </div>
             <button id="search">Search</button>
         </div>
       </header>
@@ -38,6 +43,7 @@
     let circle
     let latlng
     let radius = 1000
+    let max = 50
 
     map.on("click", (e) => {
         if (!init) {
@@ -61,9 +67,15 @@
 
     document.getElementById("radiusSlider").addEventListener("input", function(e) {
         radius = parseInt(e.target.value)
+        document.getElementById("radius").innerHTML = `${radius / 1000} km`
         if (init && circle) {
             circle.setRadius(radius)
         }
+    })
+
+    document.getElementById("maxCount").addEventListener("input", function(e) {
+        max = parseInt(e.target.value)
+        document.getElementById("max").innerHTML = `${max} results`
     })
 
     function randOffset(lat, lng) {
@@ -77,7 +89,22 @@
     function generatePopup(entry) {
         return `<h1>${entry["Account Name"]}</h1>
 <h3>${entry["Address Line 1"]}</h3>
+<img src="https://${entry["url"]}/favicon.ico" height="250" width="250">
+<h3>Ai Overview</h3>
+<p id="${entry["BN"]}">Working...</p>
 <a target="_blank" href="https://${entry["url"]}">${entry["url"].toLowerCase()}</a>`
+    }
+
+    function generateMarker(entry) {
+        const marker = L.marker(entry["pos"], {icon: markerIcon}).addTo(map)
+        marker.bindPopup(generatePopup(entry))
+        marker.on("click", async (e) => {
+            setTimeout(() => {
+                fetch("https://impact.surf/relay", {method: "GET", headers: {"url": entry["url"], "address": entry["Address Line 1"], "name": entry["Legal Name"]}}).then(res => res.text()).then(text => {
+                    document.getElementById(entry["BN"]).innerHTML = text
+                })
+            })
+        })
     }
 
     document.getElementById("search").addEventListener("click", () => {
@@ -96,12 +123,12 @@
                     pool[i] = pool[j]
                     pool[j] = t
                 }
-                for (let i = 0; i <= 200; i++) {
-                    L.marker(pool[i]["pos"], {icon: markerIcon}).addTo(map).bindPopup(generatePopup(pool[i]))
+                for (let i = 0; i < max; i++) {
+                    generateMarker(pool[i])
                 }
             } else {
                 for (const entry of pool) {
-                    L.marker(entry["pos"], {icon: markerIcon}).addTo(map).bindPopup(generatePopup(entry))
+                    generateMarker(entry)
                 }
             }
         }

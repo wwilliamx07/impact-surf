@@ -2,6 +2,8 @@ from csv import *
 from time import *
 from pgeocode import *
 from json import *
+from favicon import *
+from google import genai
 
 ident = {}
 entries = []
@@ -12,7 +14,7 @@ with open("processing/input/ident.csv", newline="", encoding="utf-8-sig") as csv
     for row in rd:
         bn = row[0]
         entry = {}
-        for i in range(1, len(row)):
+        for i in range(len(row)):
             entry[header[i]] = row[i]
         ident[bn] = entry
 
@@ -28,7 +30,7 @@ with open("processing/input/url.csv", newline="", encoding="utf-8-sig") as csvfi
 print(f"Imported {len(entries)} entries")
 
 results = []
-nomi = Nominatim('ca')
+nomi = Nominatim("ca")
 
 for i in range(len(entries)):
     print(f"Start {i}")
@@ -39,12 +41,10 @@ for i in range(len(entries)):
     results.append(entry)
 
 print(f"Finished getting coordinates of {len(results)} results")
-print("")
-
-filename = f"processing/output/out_{time()}.json"
+filename = f"processing/output/out_{time()}.js"
 print(f"Writing results to {filename}")
 
 with open(filename, "w", newline="", encoding="utf-8-sig") as out:
-    out.write(f"entries = {dumps(results)}")
+    out.write(f"const entries = {dumps(results)}")
 
 print("Finished")
