@@ -1,9 +1,12 @@
 from csv import *
+from time import *
+from pgeocode import *
+from json import *
 
 ident = {}
 entries = []
 
-with open("input/ident.csv", newline="", encoding="utf-8-sig") as csvfile:
+with open("processing/input/ident.csv", newline="", encoding="utf-8-sig") as csvfile:
     rd = reader(csvfile)
     header = next(rd)
     for row in rd:
@@ -13,12 +16,35 @@ with open("input/ident.csv", newline="", encoding="utf-8-sig") as csvfile:
             entry[header[i]] = row[i]
         ident[bn] = entry
 
-with open("input/url.csv", newline="", encoding="utf-8-sig") as csvfile:
+with open("processing/input/url.csv", newline="", encoding="utf-8-sig") as csvfile:
     rd = reader(csvfile)
     next(rd)
     for row in rd:
         bn = row[0]
-        if bn in ident:
+        if bn in ident and ident[bn]["City"] == "TORONTO":
             entries.append(ident[bn])
             entries[-1]["url"] = row[-1]
-        
+
+print(f"Imported {len(entries)} entries")
+
+results = []
+nomi = Nominatim('ca')
+
+for i in range(len(entries)):
+    print(f"Start {i}")
+    entry = entries[i]
+    data = nomi.query_postal_code(f"{entry["Postal Code"][:3]} {entry["Postal Code"][3:]}")
+    entry["lon"] = data.longitude
+    entry["lat"] = data.latitude
+    results.append(entry)
+
+print(f"Finished getting coordinates of {len(results)} results")
+print("")
+
+filename = f"processing/output/out_{time()}.json"
+print(f"Writing results to {filename}")
+
+with open(filename, "w", newline="", encoding="utf-8-sig") as out:
+    out.write(f"entries = {dumps(results)}")
+
+print("Finished")
