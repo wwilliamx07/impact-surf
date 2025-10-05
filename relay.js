@@ -4,7 +4,7 @@ import { readFileSync } from "fs"
 import { GoogleGenAI } from "@google/genai"
 
 const app = express()
-const port = 8080
+const port = 443
 
 app.use(cors())
 app.use(express.json())
